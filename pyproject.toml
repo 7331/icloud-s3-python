@@ -1,0 +1,129 @@
+[project]
+name = "icloud-s3"
+version = "0.3.0"
+description = "S3-compatible object store backed by iCloud Shared Photo Albums. Satire."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.14"
+dependencies = [
+    "fastapi>=0.162.0",
+    "pillow>=13.0.0",
+    "pydantic>=2.14.1",
+    "pydantic-settings>=2.16.1",
+    "uvicorn>=0.54.0",
+    "uvloop>=0.23.0",
+]
+
+[project.scripts]
+icloud-s3 = "icloud_s3.main:main"
+
+[dependency-groups]
+dev = [
+    "deptry>=0.25.1",
+    "import-linter>=2.5",
+    "pip-audit>=2.10.1",
+    "ruff>=0.17",
+    "ty==0.0.84",
+    "vulture>=2.16",
+    "xenon>=0.9.3",
+]
+
+[build-system]
+requires = ["uv_build>=0.12,<0.14"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = ""
+
+[tool.uv]
+prerelease = "explicit"
+
+[tool.ruff]
+line-length = 120
+target-version = "py314"
+
+[tool.ruff.lint]
+select = [
+    "E", "F", "W", "I", "N", "UP", "YTT", "ASYNC", "S", "BLE", "FBT", "B", "A",
+    "COM", "C4", "DTZ", "T10", "EM", "EXE", "FA", "ISC", "ICN", "G", "INP", "PIE",
+    "T20", "PYI", "PT", "Q", "RSE", "RET", "SLF", "SLOT", "SIM", "TID", "INT",
+    "ARG", "PTH", "TD", "FIX", "ERA", "PGH", "PL", "TRY", "FLY", "PERF", "FURB",
+    "LOG", "RUF", "ANN", "FAST",
+]
+# ANN (ANN401) is the "no Any" rule's enforcement; ty has no strict preset. TC is off: 3.14 evaluates
+# annotations lazily (PEP 649), so a TYPE_CHECKING block buys nothing.
+ignore = [
+    # Formatter conflicts: ruff recommends disabling these when using `ruff format`.
+    "E501", "COM812",
+    # Messages live at the raise site, not in a constant.
+    "TRY003", "EM101", "EM102",
+    # Keyword-only booleans are already the convention here.
+    "FBT001", "FBT002", "FBT003",
+    # Complexity is xenon's gate. PLR0913 and PLR0917 stay on.
+    "PLR0912", "PLR0915", "PLR0911",
+]
+
+[tool.ruff.lint.pylint]
+# PLR0917: at most one positional subject besides self/cls; everything after it is keyword-only.
+max-positional-args = 1
+# PLR0913: PLR0917 already rules out argument-order mixups, so this bound catches a function that takes too much.
+max-args = 8
+
+[tool.ruff.lint.isort]
+known-first-party = ["icloud_s3"]
+force-sort-within-sections = true
+
+[tool.ruff.lint.per-file-ignores]
+# FastAPI reads each query, header and dependency off the signature.
+"icloud_s3/**/router.py" = ["PLR0913"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.importlinter]
+root_packages = ["icloud_s3"]
+
+[[tool.importlinter.contracts]]
+name = "The app forms tiers: entry roots, lifespan, domains, infrastructure, shared"
+type = "layers"
+containers = ["icloud_s3"]
+layers = [
+    "main",
+    "lifespan",
+    "albums",
+    "carrier | infrastructure",
+    "shared",
+]
+
+[tool.ty.environment]
+python-version = "3.14"
+
+[tool.ty.analysis]
+# Only `ty: ignore[<rule>]`, whose rule names ty validates, suppresses anything.
+respect-type-ignore-comments = false
+
+[tool.ty.rules]
+possibly-unresolved-reference = "error"
+possibly-missing-attribute = "error"
+possibly-missing-import = "error"
+missing-type-argument = "error"
+redundant-condition-strict = "error"
+blanket-ignore-comment = "error"
+disjoint-cast = "error"
+missing-override-decorator = "error"
+unused-ignore-comment = "warn"
+
+[tool.deptry]
+known_first_party = ["icloud_s3"]
+
+[tool.deptry.per_rule_ignores]
+# uvicorn loads uvloop by name (`loop="uvloop"`), so nothing imports it.
+DEP002 = ["uvloop"]
+
+[tool.vulture]
+paths = ["icloud_s3"]
+min_confidence = 80
