@@ -4,6 +4,10 @@ A fake S3 server that hides your files inside PNG photos sized for iCloud Shared
 
 The joke: Shared Albums didn't count against iCloud storage. An Apple account gets 200 of them with 5,000 photos each, and a 2048×2048 PNG holds about 12 MB, so in theory that's about 12 TB for 0 B of quota.
 
+![This repo's source code as one photo](docs/this-repo-as-a-photo.png)
+
+That photo is this repo's source code, as a 76 KB `.tar.gz` in the pixels. To get it back, save it into `albums/icloud-s3-demo/`, run `ICLOUD_S3_ALBUM_DIRECTORY=./albums uv run icloud-s3`, then `aws s3 cp s3://prod-backups/icloud-s3-python.tar.gz .` with the setup below.
+
 > [!WARNING]
 > It's a joke, and the loophole is closing. Since iOS 27 and macOS 27, new Shared Albums keep full resolution and [count against the owner's iCloud storage](https://support.apple.com/en-us/108916). Only albums made on older software still don't. There are no passwords and no auth, and if Apple ever recompresses a photo, the file is gone. Don't put anything real in it.
 
